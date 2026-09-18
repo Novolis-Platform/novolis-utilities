@@ -1,0 +1,75 @@
+{
+  "schemaVersion": 1,
+  "catalogVersion": "2026.1.0",
+  "repository": "novolis-utilities",
+  "utilities": [
+    {
+      "key": "Adb",
+      "displayName": "ADB",
+      "project": "src/Adb/Adb.csproj",
+      "solution": "src/Adb/Adb.slnx",
+      "ship": [
+        "windows-zip"
+      ],
+      "tests": [],
+      "changedPathGlobs": [
+        "src/Adb/**",
+        "Directory.Packages.props"
+      ],
+      "externalDependencies": [
+        "Android SDK platform-tools; adb must be on PATH or discoverable from ANDROID_HOME"
+      ]
+    },
+    {
+      "key": "WireFish",
+      "displayName": "WireFish",
+      "project": "src/WireFish/WireFish.csproj",
+      "solution": "src/WireFish/WireFish.slnx",
+      "ship": [
+        "windows-zip"
+      ],
+      "tests": [
+        "tests/WireFish.Unit/WireFish.Unit.csproj"
+      ],
+      "changedPathGlobs": [
+        "src/WireFish/**",
+        "Directory.Packages.props"
+      ],
+      "externalDependencies": [
+        "Npcap for live packet capture"
+      ]
+    },
+    {
+      "key": "Torrent",
+      "displayName": "Torrent",
+      "project": "src/Torrent/Torrent.csproj",
+      "solution": "src/Torrent/Torrent.slnx",
+      "ship": [
+        "windows-zip"
+      ],
+      "tests": [],
+      "changedPathGlobs": [
+        "src/Torrent/**",
+        "Directory.Packages.props"
+      ],
+      "externalDependencies": []
+    },
+    {
+      "key": "VoiceStudio",
+      "displayName": "Voice Studio",
+      "project": "src/VoiceStudio/VoiceStudio.csproj",
+      "solution": "src/VoiceStudio/VoiceStudio.slnx",
+      "ship": [
+        "windows-zip"
+      ],
+      "tests": [],
+      "changedPathGlobs": [
+        "src/VoiceStudio/**",
+        "Directory.Packages.props"
+      ],
+      "externalDependencies": [
+        "Bundled Piper/Kokoro model assets are required for speech preview"
+      ]
+    }
+  ]
+}

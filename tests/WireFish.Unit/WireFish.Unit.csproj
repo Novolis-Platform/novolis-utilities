@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <RootNamespace>WireFish.Unit</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Novolis.Avalonia.Layout" />
+    <PackageReference Include="TUnit" />
+    <ProjectReference Include="..\..\src\WireFish\WireFish.csproj" />
+  </ItemGroup>
+</Project>
+

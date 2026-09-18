@@ -1,0 +1,39 @@
+<Project>
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    <CentralPackageFloatingVersionsEnabled>true</CentralPackageFloatingVersionsEnabled>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageVersion Include="AdvancedSharpAdbClient" Version="3.6.16" />
+    <PackageVersion Include="Avalonia" Version="12.0.2" />
+    <PackageVersion Include="Avalonia.Controls.DataGrid" Version="12.0.0" />
+    <PackageVersion Include="Avalonia.Desktop" Version="12.0.2" />
+    <PackageVersion Include="Avalonia.Fonts.Inter" Version="12.0.2" />
+    <PackageVersion Include="Avalonia.Themes.Fluent" Version="12.0.2" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.8" />
+    <PackageVersion Include="Microsoft.Extensions.Hosting" Version="10.0.8" />
+    <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="10.0.401" />
+    <PackageVersion Include="Novolis.Audio.Effects" Version="2026.1.*" />
+    <PackageVersion Include="Novolis.Audio.Filters" Version="2026.1.*" />
+    <PackageVersion Include="Novolis.Audio.Output.NAudio" Version="2026.1.*" />
+    <PackageVersion Include="Novolis.Audio.Voice" Version="2026.1.*" />
+    <PackageVersion Include="Novolis.Audio.Voice.Abstractions" Version="2026.1.*" />
+    <PackageVersion Include="Novolis.Audio.Voice.Design" Version="2026.1.*" />
+    <PackageVersion Include="Novolis.Audio.Voice.Kokoro" Version="2026.1.*" />
+    <PackageVersion Include="Novolis.Audio.Voice.Phraseology" Version="2026.1.*" />
+    <PackageVersion Include="Novolis.Audio.Voice.Platform.Abstractions" Version="2026.1.*" />
+    <PackageVersion Include="Novolis.Audio.Voice.Platform.Windows" Version="2026.1.*" />
+    <PackageVersion Include="Novolis.Audio.Voice.Profiles" Version="2026.1.*" />
+    <PackageVersion Include="Novolis.Audio.Voice.SherpaOnnx" Version="2026.1.*" />
+    <PackageVersion Include="Novolis.Avalonia.Controls" Version="2026.1.*" />
+    <PackageVersion Include="Novolis.Avalonia.Layout" Version="2026.1.*" />
+    <PackageVersion Include="Novolis.Avalonia.Studio" Version="2026.1.*" />
+    <PackageVersion Include="Novolis.Avalonia.Torrent" Version="2026.1.*" />
+    <PackageVersion Include="Novolis.Avalonia.Voice" Version="2026.1.*" />
+    <PackageVersion Include="Novolis.IO.Mobile.Android" Version="2026.1.*" />
+    <PackageVersion Include="Novolis.Messaging.Channels" Version="2026.1.*" />
+    <PackageVersion Include="Novolis.Transports.Torrent" Version="2026.1.*" />
+    <PackageVersion Include="Novolis.Transports.WireFish" Version="2026.1.*" />
+    <PackageVersion Include="TUnit" Version="1.44.39" />
+  </ItemGroup>
+</Project>

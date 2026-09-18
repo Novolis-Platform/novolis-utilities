@@ -1,0 +1,99 @@
+name: Release
+on:
+  workflow_dispatch:
+    inputs:
+      utility:
+        description: Utility key or All
+        type: string
+        default: All
+        required: true
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.matrix.outputs.matrix }}
+      package_version: ${{ steps.version.outputs.package-version }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: Novolis-Platform/novolis-workflows/actions/setup-dotnet@main
+        with:
+          dotnet-version: 10.0.x
+      - uses: Novolis-Platform/novolis-workflows/actions/read-version@main
+        id: version
+      - name: Build utility release matrix
+        id: matrix
+        shell: bash
+        run: |
+          set -euo pipefail
+          dotnet run --project tools/UtilitiesManifest/UtilitiesManifest.csproj --no-launch-profile -- \
+            release-matrix --repo "$GITHUB_WORKSPACE" --utility "${{ inputs.utility }}" \
+            > /tmp/release-matrix.json
+          echo "matrix=$(jq -c '.include' /tmp/release-matrix.json)" >> "$GITHUB_OUTPUT"
+          cat /tmp/release-matrix.json
+
+  publish:
+    needs: plan
+    runs-on: windows-latest
+    permissions:
+      contents: read
+      packages: read
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJson(needs.plan.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: Novolis-Platform/novolis-workflows/actions/setup-dotnet@main
+        with:
+          dotnet-version: 10.0.x
+      - uses: Novolis-Platform/novolis-workflows/actions/authenticate-github-packages@main
+        with:
+          token: ${{ github.token }}
+      - name: Publish utility zip
+        shell: pwsh
+        run: pwsh -NoProfile -File ./scripts/Publish-NovolisUtility.ps1 `
+          -RepoRoot "$env:GITHUB_WORKSPACE" `
+          -Utility '${{ matrix.key }}' `
+          -PackageVersion '${{ needs.plan.outputs.package_version }}'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: utility-${{ matrix.key }}
+          path: |
+            artifacts/${{ matrix.key }}/${{ needs.plan.outputs.package_version }}/*.zip
+            artifacts/${{ matrix.key }}/${{ needs.plan.outputs.package_version }}/SHA256SUMS.txt
+          if-no-files-found: error
+
+  publish-release:
+    needs: [plan, publish]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts/download
+      - name: Assemble release assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts/release
+          find artifacts/download -type f -name '*.zip' -exec cp {} artifacts/release/ \;
+          find artifacts/download -type f -name 'SHA256SUMS.txt' -exec cat {} \; > artifacts/release/SHA256SUMS.txt
+          test -s artifacts/release/SHA256SUMS.txt
+          ls -la artifacts/release
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          tag="v${{ needs.plan.outputs.package_version }}"
+          gh release create "$tag" artifacts/release/* \
+            --title "$tag" \
+            --notes "Selected utility release from build/utilities.json." \
+            --latest
+      - name: Prune older releases
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: pwsh -NoProfile -File ./scripts/prune-github-releases.ps1 -Repo "${{ github.repository }}" -Keep 5
