@@ -13,7 +13,7 @@ internal static class Program
     {
         if (args.Any(a => string.Equals(a, "--smoke", StringComparison.OrdinalIgnoreCase)))
         {
-            Environment.ExitCode = AdbSmoke.Run();
+            Environment.ExitCode = AdbSmoke.Run(args);
             return;
         }
 

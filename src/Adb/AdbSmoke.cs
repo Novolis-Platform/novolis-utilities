@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Novolis.IO.Mobile.Android;
 
 namespace Adb;
@@ -7,13 +8,31 @@ internal static class AdbSmoke
 {
     public const string BooksMobilePackage = "com.novolis.booksmobile";
 
-    public static int Run()
+    public static int Run() => Run([]);
+
+    public static int Run(string[] args)
     {
+        var options = SmokeOptions.Parse(args);
+        if (options.Error is not null)
+        {
+            Console.Error.WriteLine($"AdbSmoke: {options.Error}");
+            return 2;
+        }
+
+        var output = new List<string>();
+        void WriteOutput(string text)
+        {
+            if (options.Json)
+                output.Add(text);
+            else
+                Console.WriteLine(text);
+        }
+
         try
         {
             var adb = new AndroidDebugBridge();
-            Console.WriteLine($"transport: {adb.Transport}");
-            Console.WriteLine($"adb: {adb.AdbPath}");
+            WriteOutput($"transport: {adb.Transport}");
+            WriteOutput($"adb: {adb.AdbPath}");
             if (!string.Equals(adb.Transport, "protocol", StringComparison.Ordinal))
             {
                 Console.Error.WriteLine("AdbSmoke: expected protocol transport.");
@@ -27,26 +46,35 @@ internal static class AdbSmoke
             }
 
             var devices = adb.ListDevices();
-            Console.WriteLine($"devices: {devices.Count}");
+            WriteOutput($"devices: {devices.Count}");
             foreach (var d in devices)
-                Console.WriteLine($"  {d.Serial}\t{d.State}\t{d.Model}");
+                WriteOutput($"  {d.Serial}\t{d.State}\t{d.Model}");
 
-            var ready = devices.FirstOrDefault(d => d.State == AdbDeviceState.Device);
-            if (ready is null)
+            var selection = AndroidDeviceSelector.Resolve(
+                devices,
+                new AndroidTargetOptions
+                {
+                    Serial = options.Serial,
+                    RequireExplicitWhenMultiple = true,
+                    RequireReady = true,
+                });
+            if (!selection.Ok || selection.Device is null)
             {
-                Console.Error.WriteLine("AdbSmoke: no device in 'device' state.");
+                Console.Error.WriteLine(
+                    $"AdbSmoke: {selection.Failure?.Message ?? "no ready device"}");
                 return 1;
             }
+            var ready = selection.Device;
 
             var installer = new AndroidAppInstaller(adb);
-            var waited = installer.WaitForReadyDevice(TimeSpan.FromSeconds(5), ready.Serial);
-            Console.WriteLine($"wait: {waited.Serial} {waited.State}");
+            var waited = installer.WaitForReadyDevice(options.Timeout, ready.Serial);
+            WriteOutput($"wait: {waited.Serial} {waited.State}");
 
-            var pkg = installer.TryGetPackage(BooksMobilePackage, ready.Serial);
+            var pkg = installer.TryGetPackage(options.PackageName, ready.Serial);
             if (pkg is { IsInstalled: true })
-                Console.WriteLine($"package-info: {pkg.PackageName} {pkg.VersionName} ({pkg.VersionCode}) {pkg.ApkPath}");
+                WriteOutput($"package-info: {pkg.PackageName} {pkg.VersionName} ({pkg.VersionCode}) {pkg.ApkPath}");
             else
-                Console.WriteLine($"package-info: {BooksMobilePackage} not installed");
+                WriteOutput($"package-info: {options.PackageName} not installed");
 
             var bad = installer.ValidateApk(Path.Combine(Path.GetTempPath(), "missing-novolis.apk"));
             if (bad.Ok)
@@ -55,62 +83,114 @@ internal static class AdbSmoke
                 return 1;
             }
 
-            Console.WriteLine($"validate-missing: {bad.Errors[0]}");
+            WriteOutput($"validate-missing: {bad.Errors[0]}");
 
             var info = adb.GetDeviceInfo(ready.Serial);
-            Console.WriteLine(info.FormatReport());
-            Console.WriteLine();
+            WriteOutput(AndroidOutputRedactor.Redact(info.FormatReport()));
+            WriteOutput("");
 
-            // Protocol sync round-trip (tmp file).
-            var local = Path.Combine(Path.GetTempPath(), $"novolis-adb-{Guid.NewGuid():N}.txt");
-            var remote = "/data/local/tmp/novolis-adb-lab.txt";
-            try
+            if (!options.NonDestructive)
             {
-                File.WriteAllText(local, "novolis-protocol-ok");
-                var push = adb.Push(local, remote, ready.Serial);
-                if (!push.Ok)
+                // Protocol sync round-trip (tmp file).
+                var local = Path.Combine(Path.GetTempPath(), $"novolis-adb-{Guid.NewGuid():N}.txt");
+                var remote = $"/data/local/tmp/novolis-adb-{Guid.NewGuid():N}.txt";
+                try
                 {
-                    Console.Error.WriteLine($"AdbSmoke: push failed: {push.Message}");
-                    return 1;
-                }
+                    File.WriteAllText(local, "novolis-protocol-ok");
+                    var push = adb.Push(local, remote, ready.Serial);
+                    if (!push.Ok)
+                    {
+                        Console.Error.WriteLine($"AdbSmoke: push failed: {push.Message}");
+                        return 1;
+                    }
 
-                var pulled = Path.Combine(Path.GetTempPath(), $"novolis-adb-pull-{Guid.NewGuid():N}.txt");
-                var pull = adb.Pull(remote, pulled, ready.Serial);
-                if (!pull.Ok)
+                    var pulled = Path.Combine(Path.GetTempPath(), $"novolis-adb-pull-{Guid.NewGuid():N}.txt");
+                    var pull = adb.Pull(remote, pulled, ready.Serial);
+                    if (!pull.Ok)
+                    {
+                        Console.Error.WriteLine($"AdbSmoke: pull failed: {pull.Message}");
+                        return 1;
+                    }
+
+                    var text = File.ReadAllText(pulled);
+                    if (!text.Contains("novolis-protocol-ok", StringComparison.Ordinal))
+                    {
+                        Console.Error.WriteLine("AdbSmoke: pull content mismatch.");
+                        return 1;
+                    }
+
+                    WriteOutput($"sync: push/pull OK ({remote})");
+                    try { File.Delete(pulled); } catch { /* ignore */ }
+                }
+                finally
                 {
-                    Console.Error.WriteLine($"AdbSmoke: pull failed: {pull.Message}");
-                    return 1;
+                    try { File.Delete(local); } catch { /* ignore */ }
+                    adb.Shell($"rm -f {AndroidInputValidator.QuoteShellArgument(remote)}", ready.Serial);
                 }
-
-                var text = File.ReadAllText(pulled);
-                if (!text.Contains("novolis-protocol-ok", StringComparison.Ordinal))
-                {
-                    Console.Error.WriteLine("AdbSmoke: pull content mismatch.");
-                    return 1;
-                }
-
-                Console.WriteLine($"sync: push/pull OK ({remote})");
-                try { File.Delete(pulled); } catch { /* ignore */ }
             }
-            finally
-            {
-                try { File.Delete(local); } catch { /* ignore */ }
-                adb.Shell($"rm -f {remote}", ready.Serial);
-            }
 
-            var path = adb.Shell($"pm path {BooksMobilePackage}", ready.Serial);
-            if (path.Ok && path.StdOut.Contains(BooksMobilePackage, StringComparison.Ordinal))
-                Console.WriteLine($"package: {path.StdOut.Trim()}");
+            var path = installer.TryGetPackage(options.PackageName, ready.Serial);
+            if (path is { IsInstalled: true })
+                WriteOutput($"package: {path.ApkPath ?? "installed"}");
             else
-                Console.WriteLine($"package: {BooksMobilePackage} not installed (ok for smoke)");
+                WriteOutput($"package: {options.PackageName} not installed (ok for smoke)");
 
-            Console.WriteLine("AdbSmoke OK");
+            if (options.Json)
+                Console.WriteLine(JsonSerializer.Serialize(new { ok = true, serial = ready.Serial, output }));
+            else
+                Console.WriteLine("AdbSmoke OK");
             return 0;
         }
         catch (Exception ex)
         {
             Console.Error.WriteLine($"AdbSmoke: {ex.Message}");
             return 1;
+        }
+    }
+
+    private sealed class SmokeOptions
+    {
+        public string? Serial { get; private set; }
+        public string PackageName { get; private set; } = BooksMobilePackage;
+        public TimeSpan Timeout { get; private set; } = TimeSpan.FromSeconds(5);
+        public bool NonDestructive { get; private set; }
+        public bool Json { get; private set; }
+        public string? Error { get; private set; }
+
+        public static SmokeOptions Parse(string[] args)
+        {
+            var options = new SmokeOptions();
+            for (var i = 0; i < args.Length; i++)
+            {
+                switch (args[i].ToLowerInvariant())
+                {
+                    case "--smoke":
+                        break;
+                    case "--serial" when i + 1 < args.Length:
+                        options.Serial = args[++i];
+                        break;
+                    case "--package" when i + 1 < args.Length:
+                        options.PackageName = args[++i];
+                        break;
+                    case "--timeout" when i + 1 < args.Length
+                        && int.TryParse(args[++i], out var seconds)
+                        && seconds > 0:
+                        options.Timeout = TimeSpan.FromSeconds(seconds);
+                        break;
+                    case "--non-destructive":
+                        options.NonDestructive = true;
+                        break;
+                    case "--json":
+                        options.Json = true;
+                        break;
+                    default:
+                        return new SmokeOptions { Error = $"Unknown or incomplete option '{args[i]}'." };
+                }
+            }
+
+            if (!AndroidInputValidator.IsPackageName(options.PackageName))
+                return new SmokeOptions { Error = $"Invalid package name '{options.PackageName}'." };
+            return options;
         }
     }
 }
