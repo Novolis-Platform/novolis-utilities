@@ -13,8 +13,8 @@
     <PackageReference Include="Avalonia.Fonts.Inter" />
     <PackageReference Include="Avalonia.Themes.Fluent" />
     <PackageReference Include="Microsoft.Extensions.Hosting" />
-    <PackageReference Include="Novolis.Avalonia.Torrent" />
-    <PackageReference Include="Novolis.Transports.Torrent" />
+    <LibraryReference Include="Novolis.Avalonia.Torrent" />
+    <LibraryReference Include="Novolis.Transports.Torrent" />
   </ItemGroup>
   <ItemGroup>
     <None Include="samples\**\*" CopyToOutputDirectory="PreserveNewest" LinkBase="samples" />

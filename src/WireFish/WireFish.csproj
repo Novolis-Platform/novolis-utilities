@@ -14,10 +14,10 @@
     <PackageReference Include="Avalonia.Fonts.Inter" />
     <PackageReference Include="Avalonia.Themes.Fluent" />
     <PackageReference Include="Microsoft.Extensions.Hosting" />
-    <PackageReference Include="Novolis.Avalonia.Controls" />
-    <PackageReference Include="Novolis.Avalonia.Layout" />
-    <PackageReference Include="Novolis.Transports.WireFish" />
-    <PackageReference Include="Novolis.Messaging.Channels" />
+    <LibraryReference Include="Novolis.Avalonia.Controls" />
+    <LibraryReference Include="Novolis.Avalonia.Layout" />
+    <LibraryReference Include="Novolis.Transports.WireFish" />
+    <LibraryReference Include="Novolis.Messaging.Channels" />
   </ItemGroup>
 </Project>
 

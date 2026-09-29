@@ -5,7 +5,7 @@
     <RootNamespace>WireFish.Unit</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Novolis.Avalonia.Layout" />
+    <LibraryReference Include="Novolis.Avalonia.Layout" />
     <PackageReference Include="TUnit" />
     <ProjectReference Include="..\..\src\WireFish\WireFish.csproj" />
   </ItemGroup>
