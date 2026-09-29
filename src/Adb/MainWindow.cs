@@ -48,7 +48,7 @@ internal sealed class MainWindow : Window
 
     public MainWindow()
     {
-        Title = "Novolis Adb Lab";
+        Title = "Novolis Android Device Tools";
         Width = 1180;
         Height = 820;
         MinWidth = 800;
@@ -152,7 +152,7 @@ internal sealed class MainWindow : Window
             {
                 new TextBlock
                 {
-                    Text = "Adb Lab",
+                    Text = "Android Device Tools",
                     FontSize = 22,
                     FontWeight = FontWeight.SemiBold,
                     Foreground = Text,
