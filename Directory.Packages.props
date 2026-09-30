@@ -26,6 +26,7 @@
     <PackageVersion Include="Novolis.Audio.Voice.Profiles" Version="2026.1.*" />
     <PackageVersion Include="Novolis.Audio.Voice.SherpaOnnx" Version="2026.1.*" />
     <PackageVersion Include="Novolis.Avalonia.Controls" Version="2026.1.*" />
+    <PackageVersion Include="Novolis.Avalonia.GraphicalProfile" Version="2026.1.*" />
     <PackageVersion Include="Novolis.Avalonia.Layout" Version="2026.1.*" />
     <PackageVersion Include="Novolis.Avalonia.Studio" Version="2026.1.*" />
     <PackageVersion Include="Novolis.Avalonia.Torrent" Version="2026.1.*" />
