@@ -35,6 +35,7 @@ internal static class Program
                 "generate-solutions" => GenerateSolutions(manifest, repo),
                 "ci-matrix" => EmitCiMatrix(manifest, GetChangedFiles(args)),
                 "release-matrix" => EmitReleaseMatrix(manifest, GetOption(args, "--utility")),
+                "publish" => UtilityPublishCommand.Publish(manifest, repo, args.Skip(1).ToArray()),
                 _ => Unknown(command),
             };
         }
@@ -45,7 +46,7 @@ internal static class Program
         }
     }
 
-    private static UtilityManifest Load(string path)
+    internal static UtilityManifest Load(string path)
     {
         if (!File.Exists(path))
             throw new FileNotFoundException($"Utilities manifest not found: {path}");
@@ -300,14 +301,14 @@ internal static class Program
 
     private static void PrintUsage() =>
         Console.Error.WriteLine(
-            "Usage: UtilitiesManifest <validate|list|generate-solutions|ci-matrix|release-matrix> [options]");
+            "Usage: UtilitiesManifest <validate|list|generate-solutions|ci-matrix|release-matrix|publish> [options]");
 
-    private sealed class UtilityManifest
+    internal sealed class UtilityManifest
     {
         public List<UtilityEntry> Utilities { get; init; } = [];
     }
 
-    private sealed class UtilityEntry
+    internal sealed class UtilityEntry
     {
         public string Key { get; init; } = string.Empty;
         public string DisplayName { get; init; } = string.Empty;
