@@ -5,6 +5,7 @@
     <OutputType>Exe</OutputType>
     <IsTestingPlatformApplication>true</IsTestingPlatformApplication>
     <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
+    <UseAppHost>true</UseAppHost>
     <RootNamespace>WireFish.Unit</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
