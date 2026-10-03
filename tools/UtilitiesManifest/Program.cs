@@ -171,7 +171,12 @@ internal static class Program
 
     private static int EmitCiMatrix(UtilityManifest manifest, IReadOnlyList<string> changedFiles)
     {
-        var selected = changedFiles.Count == 0
+        var selectAll = changedFiles.Count == 0
+            || changedFiles.Any(file =>
+                file.StartsWith(".github/workflows/", StringComparison.OrdinalIgnoreCase)
+                || file.Equals("build/utilities.json", StringComparison.OrdinalIgnoreCase)
+                || file.StartsWith("tools/UtilitiesManifest/", StringComparison.OrdinalIgnoreCase));
+        var selected = selectAll
             ? manifest.Utilities
             : manifest.Utilities
                 .Where(utility => utility.ChangedPathGlobs.Any(glob =>
