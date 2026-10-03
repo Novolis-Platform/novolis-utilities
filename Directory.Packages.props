@@ -35,6 +35,10 @@
     <PackageVersion Include="Novolis.Messaging.Channels" Version="2026.1.*" />
     <PackageVersion Include="Novolis.Transports.Torrent" Version="2026.1.*" />
     <PackageVersion Include="Novolis.Transports.WireFish" Version="2026.1.*" />
+    <PackageVersion Include="Novolis.Http.Client" Version="2026.1.*" />
+    <PackageVersion Include="Novolis.Http.Documents" Version="2026.1.*" />
+    <PackageVersion Include="Novolis.Http.Variables" Version="2026.1.*" />
+    <PackageVersion Include="Novolis.Language.RoboSharp" Version="2026.1.*" />
     <PackageVersion Include="TUnit" Version="1.72.4" />
   </ItemGroup>
 </Project>

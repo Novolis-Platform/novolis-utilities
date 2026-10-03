@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>Novolis.HttpRunner</RootNamespace>
+    <AssemblyName>Novolis.HttpRunner</AssemblyName>
+    <Description>Open, resolve, send, and replay Novolis HTTP request documents.</Description>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+  <ItemGroup>
+    <LibraryReference Include="Novolis.Http.Client" />
+    <LibraryReference Include="Novolis.Http.Documents" />
+    <LibraryReference Include="Novolis.Http.Variables" />
+  </ItemGroup>
+</Project>
