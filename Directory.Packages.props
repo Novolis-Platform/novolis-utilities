@@ -39,6 +39,6 @@
     <PackageVersion Include="Novolis.Http.Documents" Version="2026.1.*" />
     <PackageVersion Include="Novolis.Http.Variables" Version="2026.1.*" />
     <PackageVersion Include="Novolis.Language.RoboSharp" Version="2026.1.*" />
-    <PackageVersion Include="TUnit" Version="1.72.4" />
+    <PackageVersion Include="TUnit" Version="1.72.16" />
   </ItemGroup>
 </Project>
