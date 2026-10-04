@@ -1,4 +1,6 @@
 using System.Text.Json;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Novolis.Http.Client;
 using Novolis.Http.Documents;
 using Novolis.Http.Variables;
@@ -31,12 +33,14 @@ internal static class Program
             return 2;
         }
 
-        var resolved = await new TemplateHttpVariableResolver().ResolveAsync(
+        var builder = Host.CreateApplicationBuilder(args);
+        builder.Services.AddNovolisHttp();
+        using var host = builder.Build();
+        var factory = host.Services.GetRequiredService<IHttpClientFactory>();
+        using var response = await factory.SendAsync(
             document,
-            new HttpEnvironment());
-        using var request = resolved.CreateRequest();
-        using var http = new HttpClient();
-        using var response = await new RestClient(http, [], []).SendAsync(request, CancellationToken.None);
+            new HttpEnvironment(),
+            new TemplateHttpVariableResolver());
         Console.WriteLine($"{(int)response.StatusCode} {response.ReasonPhrase}");
         Console.WriteLine(await response.Content.ReadAsStringAsync());
         return response.IsSuccessStatusCode ? 0 : 1;
